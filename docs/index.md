@@ -1,7 +1,6 @@
-# MkDocs Basic Theme
+# MkDocs SmallzhBook Theme
 
-This is a very basic theme for MkDocs with the goal of demonstrating all of
-the features with minimal HTML and CSS.
+smallzh.top网站，我的项目使用的主题，基于MkDocs进行构建
 
 ## Adapting this theme
 

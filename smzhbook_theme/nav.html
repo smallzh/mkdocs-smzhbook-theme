@@ -1,17 +1,20 @@
-<!--
-
--->
-{% if not nav_item.children %}
-<li {% if nav_item.active %}class="active"{% endif %}>
-    <a href="{{ nav_item.url|url }}">{{ nav_item.title }}</a>
-</li>
+<!-- 导航项模板 -->
+{% if nav_item.is_section %}
+    <!-- 章节标题 -->
+    <li class="header">{{ nav_item.title }}</li>
+{% elif nav_item.children %}
+    <!-- 有子菜单的项 -->
+    <li class="chapter{% if nav_item.active %} active{% endif %}" data-path="{{ nav_item.url }}">
+        <a href="{{ nav_item.url|url }}">{{ nav_item.title }}</a>
+        <ul>
+            {% for nav_item in nav_item.children %}
+                {% include "nav.html" %}
+            {% endfor %}
+        </ul>
+    </li>
 {% else %}
-  <li>
-    {{ nav_item.title }}
-    <ul>
-        {% for nav_item in nav_item.children %}
-            {% include "nav.html" %}
-        {% endfor %}
-    </ul>
-  </li>
+    <!-- 单页项 -->
+    <li class="chapter{% if nav_item.active %} active{% endif %}" data-path="{{ nav_item.url }}">
+        <a href="{{ nav_item.url|url }}">{{ nav_item.title }}</a>
+    </li>
 {% endif %}

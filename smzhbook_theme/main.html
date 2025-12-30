@@ -1,1 +1,11 @@
 {% extends "base.html" %}
+
+{#
+    Main template - 继承自 base.html
+    可以在这里添加额外的块或覆盖现有的块
+#}
+
+{% block content %}
+    {# 可以在这里添加自定义的内容处理逻辑 #}
+    {{ super() }}
+{% endblock %}

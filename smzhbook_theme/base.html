@@ -1,197 +1,224 @@
-<!--
-  This Basic theme serves as an example for how to create other
-  themes by demonstrating the features with minimal HTML and CSS.
-  Comments like this will be through the code to explain briefly
-  what each feature is and point you to the MkDocs documentation
-  to find out more.
--->
 <!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="HandheldFriendly" content="true">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
 
-  <!--
-    The page_title contains the title for a page as shown in the navigation.
-    Site name contains the name as defined in the mkdocs.yml
-  -->
-  <title>{% if page.title %}{{ page.title }} - {% endif %}{{ config.site_name }}</title>
+    <!-- 页面标题 -->
+    <title>{% if page and page.title %}{{ page.title }} - {% endif %}{{ config.site_name }}</title>
 
-  <!--
-    Just add a favicon.ico image to the docs.
-  -->
-     <link rel="shortcut icon" href="{{ "img/favicon.ico"|url }}">
+    <!-- 站点描述 -->
+    {% if config.site_description %}
+    <meta name="description" content="{{ config.site_description }}">
+    {% endif %}
 
+    <!-- 作者信息 -->
+    {% if config.site_author %}
+    <meta name="author" content="{{ config.site_author }}">
+    {% endif %}
 
-  <!--
-    You can include external assets of course, but be aware that it means the
-    documentation may not work well offline.
-  -->
-  <link rel="stylesheet" href="https://unpkg.com/purecss@1.0.0/build/pure-min.css">
+    <!-- 生成器信息 -->
+    <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-smzhbook-{{ config.theme.version }}">
 
-  <link rel="stylesheet" href="{{ "css/theme.css"|url }}">
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{{ "img/favicon.ico"|url }}" type="image/x-icon">
 
-  <!--
-    extra_css contains paths to CSS files in the users
-    documentation directory or a list of CSS files defined in
-    their mkdocs.yml.
+    <!-- 主题 CSS -->
+    <link rel="stylesheet" href="{{ "css/theme.css"|url }}">
 
-    http://www.mkdocs.org/user-guide/configuration/#extra_css
-  -->
-  {% for path in config.extra_css %}
+    <!-- 用户自定义 CSS -->
+    {% for path in config.extra_css %}
     <link href="{{ path|url }}" rel="stylesheet">
-  {% endfor %}
+    {% endfor %}
 
-  <script
-  src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-  integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E="
-  crossorigin="anonymous"></script>
+    <!-- 字体图标 (可选) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
-  <!--
-    To include static assets from our theme, just make the path
-    relative to the root of the documentation with `|url`.
-  -->
-  <script src="{{ "js/theme.js"|url }}"></script>
+    {% block extrahead %}
+    {% endblock %}
 
-  {% block extrahead %}
-  {% endblock %}
-
-  <!--
-    extra_javascript contains paths to JavaScript files in the
-    users documentation directory or a list of JavaScript files
-    defined in their mkdocs.yml.
-
-    http://www.mkdocs.org/user-guide/configuration/#extra_javascript
-  -->
-  {% for script in config.extra_javascript %}
+    <!-- 用户自定义 JavaScript -->
+    {% for script in config.extra_javascript %}
     {{ script | script_tag }}
-  {% endfor %}
+    {% endfor %}
 
-  <!--
-    Include Google Analytics tracking code.
+    <!-- Google Analytics -->
+    {% if config.google_analytics %}
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-    http://www.mkdocs.org/user-guide/configuration/#google_analytics
-  -->
-  {% if config.google_analytics %}
-  <script>
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-      ga('create', '{{ config.google_analytics[0] }}', '{{ config.google_analytics[1] }}');
-      ga('send', 'pageview');
-  </script>
-  {% endif %}
-
+        ga('create', '{{ config.google_analytics[0] }}', '{{ config.google_analytics[1] }}');
+        ga('send', 'pageview');
+    </script>
+    {% endif %}
 </head>
 
 <body>
+    <div class="book">
+        <!-- 左侧导航栏 -->
+        <div class="book-summary">
+            <!-- 搜索框 -->
+            {% if 'search' in config['plugins'] %}
+            <div id="book-search-input" role="search">
+                <input type="text" placeholder="输入关键词搜索..." />
+            </div>
+            {% endif %}
 
-  <h1>This is an example theme for MkDocs.</h1>
+            <!-- 导航菜单 -->
+            <nav role="navigation">
+                <ul class="summary">
+                    <!-- 站点名称链接 -->
+                    <li>
+                        <a href="{{ nav.homepage.url|url }}" class="custom-link">{{ config.site_name }}</a>
+                    </li>
+                    <li class="divider"></li>
 
-  <p>
-    It is designed to be read by looking at the theme HTML which is heavily
-    commented. The easiest way to do that is by
-    <strong><a href="https://github.com/mkdocs/mkdocs-basic-theme/tree/master/basic_theme">
-    looking at the source on GitHub.</a></strong>. Otherwise this is just a
-    demonstration that the theme is fully functional.
-  </p>
+                    <!-- 导航项 -->
+                    {% for nav_item in nav %}
+                        {% if nav_item.children %}
+                            <!-- 有子菜单的项 -->
+                            <li class="header">{{ nav_item.title }}</li>
+                            {% for nav_item in nav_item.children %}
+                                {% include "nav.html" %}
+                            {% endfor %}
+                        {% else %}
+                            <!-- 单页项 -->
+                            <li class="chapter{% if nav_item.active %} active{% endif %}" data-path="{{ nav_item.url }}">
+                                <a href="{{ nav_item.url|url }}">{{ nav_item.title }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
 
-  <hr/>
+                    <li class="divider"></li>
 
-  <h2>Documentation Navigation</h2>
+                    <!-- 版权信息 -->
+                    {% if config.copyright %}
+                    <li>{{ config.copyright }}</li>
+                    {% endif %}
 
-  <!--
-    Create the navigation for the documentation.
+                    <!-- 底部链接 -->
+                    <li><a href="https://www.mkdocs.org">Published with MkDocs</a></li>
+                    <li><a href="{{ config.repo_url }}">Theme by SmzhBook</a></li>
+                </ul>
+            </nav>
+        </div>
 
-    Because we don't know how many levels deep the navigation is, it needs to
-    be included in it's own file so it can be recursive. Otherwise the theme
-    can also only support a specific number of levels.
+        <!-- 右侧内容区域 -->
+        <div class="book-body">
+            <div class="body-inner">
+                <!-- 页面标题栏 -->
+                <div class="book-header" role="navigation">
+                    <h1>
+                        <i class="fa fa-circle-o-notch fa-spin"></i>
+                        <a href=".">{% if page and page.title %}{{ page.title }}{% endif %}</a>
+                    </h1>
+                </div>
 
-    See the nav.html file for more details about how this works.
-  -->
-  <ul>
-  {% for nav_item in nav %}
-    {% include "nav.html" %}
-  {% endfor %}
-  </ul>
+                <!-- 页面内容 -->
+                <div class="page-wrapper" tabindex="-1" role="main">
+                    <div class="page-inner">
+                        <!-- 搜索结果容器 -->
+                        {% if 'search' in config['plugins'] %}
+                        <div id="book-search-results">
+                            <div class="search-noresults">
+                        {% endif %}
 
-  <hr/>
+                                <!-- Markdown 内容 -->
+                                <section class="normal markdown-section">
+                                    <!-- 页面目录 (TOC) -->
+                                    {% if page.toc %}
+                                    <div class="page-toc">
+                                        <h3>目录</h3>
+                                        <ul>
+                                            {% for toc_item in page.toc %}
+                                                <li><a href="{{ toc_item.url }}">{{ toc_item.title }}</a>
+                                                    {% if toc_item.children %}
+                                                    <ul>
+                                                        {% for toc_item in toc_item.children %}
+                                                            <li><a href="{{ toc_item.url }}">{{ toc_item.title }}</a></li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                    {% endif %}
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    {% endif %}
 
-  <h2>Support for search</h2>
-  <!--
-    Create a search form that sends the user to the search.html file - this is
-    the other file in the template which adds search to the theme. The only
-    requirement here is that there is a text input with the name 'q' and the
-    action and methods match below.
-  -->
-  <div role="search">
-    <form action="{{ "search.html"|url }}" method="get">
-      <input type="search" name="q" placeholder="Search docs" />
-    </form>
-  </div>
+                                    <!-- 页面内容 -->
+                                    {% block content %}
+                                        {{ page.content }}
+                                    {% endblock %}
 
-  <hr/>
+                                    <!-- 上一页/下一页导航 -->
+                                    {% if page.next_page or page.previous_page %}
+                                    <div class="navigation">
+                                        {% if page.previous_page %}
+                                        <a href="{{ page.previous_page.url|url }}" class="navigation-prev" title="{{ page.previous_page.title }}">
+                                            上一页: {{ page.previous_page.title }}
+                                        </a>
+                                        {% endif %}
 
-  <h2>Next and previous links</h2>
-  <!--
-    Implement the previous and next links to cycle through the pages.
-  -->
-  {% if page.next_page or page.previous_page %}
-    <div>
-      {% if page.previous_page %}
-        <a href="{{ page.previous_page.url|url }}" title="{{ page.previous_page.title }}">&#8592; Previous Page</a>
-      {% else %}
-        &#8592; Previous Page
-      {% endif %}
-      -
-      {% if page.next_page %}
-        <a href="{{ page.next_page.url|url }}" title="{{ page.next_page.title }}"/>Next Page &#8594;</a>
-      {% else %}
-        Next Page &#8594;
-      {% endif %}
+                                        {% if page.next_page %}
+                                        <a href="{{ page.next_page.url|url }}" class="navigation-next" title="{{ page.next_page.title }}">
+                                            下一页: {{ page.next_page.title }}
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- 编辑链接 -->
+                                    {% if page and page.edit_url %}
+                                    <div style="margin-top: 40px; text-align: center;">
+                                        <a href="{{ page.edit_url }}" style="color: #999; font-size: 14px;">
+                                            <i class="fa fa-edit"></i> 编辑此页
+                                        </a>
+                                    </div>
+                                    {% elif config.repo_url %}
+                                    <div style="margin-top: 40px; text-align: center;">
+                                        <a href="{{ config.repo_url }}" style="color: #999; font-size: 14px;">
+                                            <i class="fa fa-github"></i> 查看源码
+                                        </a>
+                                    </div>
+                                    {% endif %}
+                                </section>
+
+                        <!-- 搜索结果 -->
+                        {% if 'search' in config['plugins'] %}
+                            </div>
+                            <div class="search-results">
+                                <div class="has-results">
+                                    <h1 class="search-results-title">
+                                        <span class='search-results-count'></span> 个结果匹配 "<span class='search-query'></span>"
+                                    </h1>
+                                    <ul class="search-results-list"></ul>
+                                </div>
+                                <div class="no-results">
+                                    <h1 class="search-results-title">没有找到匹配 "<span class='search-query'></span>" 的结果</h1>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  {% endif %}
 
-  <hr/>
+    <!-- 主题 JavaScript -->
+    <script src="{{ "js/theme.js"|url }}"></script>
 
-  <h2>Link to the source</h2>
-  <!--
-    Support repo URL
-  -->
-  {% if page and page.edit_url %}
-    <a href="{{ page.edit_url }}">Edit on {{ config.repo_name }}</a>
-  {% elif config.repo_url %}
-    <a href="{{ config.repo_url }}">{{ config.repo_name }}</a>
-  {% endif %}
-
-  <hr/>
-
-  <h2>Show the table of contents for the current page</h2>
-  <ul>
-  {% for toc_item in page.toc %}
-      <li><a href="{{ toc_item.url }}">{{ toc_item.title }}</a></li>
-      {% for toc_item in toc_item.children %}
-          <li><a href="{{ toc_item.url }}">{{ toc_item.title }}</a></li>
-      {% endfor %}
-  {% endfor %}
-  </ul>
-
-  <hr/>
-
-  {% block content %}
-    {{ page.content }}
-  {% endblock %}
-
-  <hr/>
-
-  Built with <a href="https://www.mkdocs.org">MkDocs</a>.
-
-  <!--
-  MkDocs version      : {{ mkdocs_version }}
-  Docs Build Date UTC : {{ build_date_utc }}
-  -->
-
+    <!-- MkDocs 版本和构建时间 -->
+    <!--
+    MkDocs version: {{ mkdocs_version }}
+    Docs Build Date UTC: {{ build_date_utc }}
+    -->
 </body>
 </html>
