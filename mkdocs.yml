@@ -1,0 +1,5 @@
+site_name: MkDocs smzhbook theme
+repo_url: https://github.com/smallzh/mkdocs-smzhbook-theme
+
+theme:
+    name: smzhbook
