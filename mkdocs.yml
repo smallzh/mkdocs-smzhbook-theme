@@ -1,5 +1,16 @@
-site_name: MkDocs smzhbook theme
+site_name: mkdocs smzhbook theme
 repo_url: https://github.com/smallzh/mkdocs-smzhbook-theme
 
+nav:
+  - Home: index.md
+  - User Guide:
+      - 'MkDocs解析过程': user-guide/mkdocs-parse-process.md
+      - 'mkdocs.yml文件参数': user-guide/configuration.md
+      - '自定义主题': user-guide/custom-themes.md
+      - 'markdown文档': user-guide/writing-your-docs.md
+  - About:
+      - '关于': about/about_me.md
+      - 'License': about/license.md
+
 theme:
-    name: smzhbook
+  name: smzhbook

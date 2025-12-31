@@ -1,6 +1,10 @@
 ---
 title: License
 ---
-# Testing Page
+# License
 
-See the [Home Page](../index.md). All the other pages are for demonstration purposes with the navigation only.
+```txt
+
+```
+
+项目使用`MIT`协议，您可以随便使用，只需**风险自担**即可。
