@@ -3,7 +3,7 @@ title: MkDocs Parse
 ---
 # MkDocs文档构建的解析过程
 
-[MkDocs]() 是一个静态站点构建工具，从 [源码]() 来看的话，解析过程也不复杂，在这篇文章里，我们梳理一下它的核心解析过程。
+[MkDocs](https://mkdocs.readthedocs.io/en/stable/) 是一个静态站点构建工具，从 [源码](https://github.com/mkdocs/mkdocs/tree/master) 来看的话，解析过程也不复杂，在这篇文章里，我们梳理一下它的核心解析过程。
 
 
 ## 0x01. 整体流程图
