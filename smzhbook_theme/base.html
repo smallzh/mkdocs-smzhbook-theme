@@ -239,6 +239,42 @@
     <!-- 主题 JavaScript -->
     <script src="{{ "js/theme.js"|url }}"></script>
 
+    <!-- Mermaid.js (本地) -->
+    <script src="{{ "js/mermaid.min.js"|url }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            mermaid.initialize({
+                startOnLoad: false,
+                theme: 'default',
+                securityLevel: 'loose',
+                flowchart: {
+                    useMaxWidth: true,
+                    htmlLabels: true
+                },
+                sequence: {
+                    useMaxWidth: true,
+                    diagramMarginX: 50
+                }
+            });
+            
+            // 渲染页面中的 Mermaid 代码块
+            var mermaidBlocks = document.querySelectorAll('.language-mermaid, .mermaid');
+            mermaidBlocks.forEach(function(block) {
+                var parent = block.parentElement;
+                if (parent && parent.tagName === 'PRE') {
+                    var code = block.textContent || block.innerText;
+                    var div = document.createElement('div');
+                    div.className = 'mermaid';
+                    div.textContent = code;
+                    parent.parentNode.replaceChild(div, parent);
+                }
+            });
+            
+            // 重新渲染所有 mermaid div
+            mermaid.run();
+        });
+    </script>
+
     <!-- MkDocs 版本和构建时间 -->
     <!--
     MkDocs version: {{ mkdocs_version }}

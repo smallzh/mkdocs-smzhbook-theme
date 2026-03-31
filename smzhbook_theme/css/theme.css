@@ -921,6 +921,37 @@ body {
     display: block !important;
 }
 
+/* ========== Mermaid 图表样式 ========== */
+.mermaid {
+    margin: 1.5em 0;
+    padding: 1em;
+    background: var(--vp-c-bg-soft);
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.mermaid svg {
+    max-width: 100%;
+    height: auto;
+}
+
+/* 代码块中的 mermaid */
+pre code.mermaid,
+pre code.language-mermaid {
+    display: none;
+}
+
+div.mermaid {
+    text-align: center;
+}
+
+/* Mermaid 图表在暗色模式下的样式 */
+@media (prefers-color-scheme: dark) {
+    .mermaid {
+        background: var(--vp-c-bg-soft, #252529);
+    }
+}
+
 /* ========== 暗色模式支持（可选） ========== */
 @media (prefers-color-scheme: dark) {
     /* 如需暗色模式，取消注释以下样式 */
