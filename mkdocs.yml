@@ -13,4 +13,5 @@ nav:
       - 'License': about/license.md
 
 theme:
-  name: smzhbook
+  name: mkdocs
+  custom_dir: smzhbook_theme

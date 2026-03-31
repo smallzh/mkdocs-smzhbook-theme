@@ -5,3 +5,4 @@ site/
 .venv
 uv.lock
 .idea
+.playwright-mcp

@@ -35,9 +35,6 @@
     <link href="{{ path|url }}" rel="stylesheet">
     {% endfor %}
 
-    <!-- 字体图标 (可选) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-
     {% block extrahead %}
     {% endblock %}
 
@@ -49,131 +46,195 @@
 </head>
 
 <body>
-    <div class="book">
-        <!-- 左侧导航栏 -->
-        <div class="book-summary">
-            <!-- 搜索框 -->
-            {% if 'search' in config['plugins'] %}
-            <div id="book-search-input" role="search">
-                <input type="text" placeholder="输入关键词搜索..." />
-            </div>
-            {% endif %}
+    <div id="app">
+        <!-- 顶部导航栏 -->
+        <header class="vp-nav">
+            <div class="vp-nav-bar">
+                <!-- 移动端菜单按钮 -->
+                <button class="vp-menu-toggle" aria-label="切换导航菜单">
+                    <span class="vp-menu-icon"></span>
+                </button>
 
-            <!-- 导航菜单 -->
-            <nav role="navigation">
-                <ul class="summary">
-                    <!-- 站点名称链接 -->
-                    <li>
-                        <a href="{{ nav.homepage.url|url }}" class="custom-link">{{ config.site_name }}</a>
-                    </li>
-                    <li class="divider"></li>
-
-                    <!-- 导航项 -->
-                    {% for nav_item in nav %}
-                        {% if nav_item.children %}
-                            <!-- 有子菜单的项 -->
-                            <li class="header">{{ nav_item.title }}</li>
-                            {% for nav_item in nav_item.children %}
-                                {% include "nav.html" %}
-                            {% endfor %}
-                        {% else %}
-                            <!-- 单页项 -->
-                            <li class="chapter{% if nav_item.active %} active{% endif %}" data-path="{{ nav_item.url }}">
-                                <a href="{{ nav_item.url|url }}">{{ nav_item.title }}</a>
-                            </li>
+                <!-- Logo/站点名称 -->
+                <div class="vp-nav-bar-title">
+                    <a href="{{ nav.homepage.url|url }}" class="vp-nav-bar-logo">
+                        {% if config.extra.logo %}
+                        <img src="{{ config.extra.logo|url }}" alt="{{ config.site_name }}" class="vp-logo">
                         {% endif %}
-                    {% endfor %}
+                        <span class="vp-site-name">{{ config.site_name }}</span>
+                    </a>
+                </div>
 
-                    <li class="divider"></li>
-
-                    <!-- 版权信息 -->
-                    {% if config.copyright %}
-                    <li>{{ config.copyright }}</li>
+                <!-- 顶部导航菜单 -->
+                <div class="vp-nav-bar-content">
+                    {% if config.nav %}
+                    <nav class="vp-nav-bar-menu">
+                        {% for nav_item in config.nav %}
+                        <div class="vp-nav-bar-menu-item{% if nav_item.children %} has-dropdown{% endif %}">
+                            {% if nav_item.children %}
+                            <button class="vp-nav-bar-menu-link">
+                                {{ nav_item.title }}
+                                <span class="vp-dropdown-icon"></span>
+                            </button>
+                            <div class="vp-nav-bar-dropdown">
+                                {% for child in nav_item.children %}
+                                <a href="{{ child.url|url }}" class="vp-nav-bar-dropdown-link">
+                                    {{ child.title }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <a href="{{ nav_item.url|url }}" class="vp-nav-bar-menu-link">
+                                {{ nav_item.title }}
+                            </a>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </nav>
                     {% endif %}
 
-                    <!-- 底部链接 -->
-                    <li><a href="https://mkdocs.readthedocs.io/">Published with MkDocs</a></li>
-                    <li><a href="{{ config.repo_url }}">Theme by smzhbook</a></li>
-                </ul>
-            </nav>
-        </div>
+                    <!-- 搜索框 -->
+                    {% if 'search' in config['plugins'] %}
+                    <div class="vp-nav-bar-search">
+                        <div id="book-search-input">
+                            <input type="text" placeholder="搜索文档..." />
+                            <span class="vp-search-key">⌘ K</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
 
-        <!-- 右侧内容区域 -->
-        <div class="book-body">
-            <div class="body-inner">
-                <!-- 页面内容 -->
-                <div class="page-wrapper" tabindex="-1" role="main">
-                    <div class="page-inner">
-                            <!-- Markdown 内容 -->
-                            <section class="normal markdown-section">
-                                <!-- 页面目录 (TOC) -->
-                                {% if page.toc %}
-                                <div class="page-toc">
-                                    <h3>目录</h3>
-                                    <ul>
+        <!-- 主体布局 -->
+        <div class="vp-layout">
+            <!-- 左侧侧边栏 -->
+            <aside class="vp-sidebar" id="vp-sidebar">
+                <div class="vp-sidebar-backdrop"></div>
+                <div class="vp-sidebar-container">
+                    <nav class="vp-sidebar-nav" role="navigation">
+                        <div class="vp-sidebar-group">
+                            <ul class="vp-sidebar-links">
+                                <!-- 导航项 -->
+                                {% for nav_item in nav %}
+                                    {% if nav_item.children %}
+                                        <!-- 有子菜单的项 - 渲染分组标题和子项 -->
+                                        <li class="vp-sidebar-section">
+                                            <p class="vp-sidebar-section-title">{{ nav_item.title }}</p>
+                                            <ul class="vp-sidebar-section-items">
+                                                {% for child in nav_item.children %}
+                                                    <li class="vp-sidebar-item{% if child.active %} active{% endif %}">
+                                                        <a href="{{ child.url|url }}" class="vp-sidebar-link">
+                                                            {{ child.title }}
+                                                        </a>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </li>
+                                    {% else %}
+                                        <!-- 单页项 -->
+                                        <li class="vp-sidebar-item{% if nav_item.active %} active{% endif %}">
+                                            <a href="{{ nav_item.url|url }}" class="vp-sidebar-link">
+                                                {{ nav_item.title }}
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </nav>
+                </div>
+            </aside>
+
+            <!-- 主内容区域 -->
+            <main class="vp-content" id="VPContent">
+                <div class="vp-content-container">
+                    <!-- 页面内容 -->
+                    <div class="vp-doc">
+                        {% block content %}
+                            {{ page.content }}
+                        {% endblock %}
+
+                        <!-- 上一页/下一页导航 -->
+                        {% if page.next_page or page.previous_page %}
+                        <div class="vp-doc-footer">
+                            <div class="vp-pagination">
+                                {% if page.previous_page %}
+                                <a href="{{ page.previous_page.url|url }}" class="vp-pagination-link prev">
+                                    <span class="vp-pagination-label">上一页</span>
+                                    <span class="vp-pagination-title">{{ page.previous_page.title }}</span>
+                                </a>
+                                {% else %}
+                                <div></div>
+                                {% endif %}
+
+                                {% if page.next_page %}
+                                <a href="{{ page.next_page.url|url }}" class="vp-pagination-link next">
+                                    <span class="vp-pagination-label">下一页</span>
+                                    <span class="vp-pagination-title">{{ page.next_page.title }}</span>
+                                </a>
+                                {% else %}
+                                <div></div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- 右侧目录 -->
+                    {% if page.toc and page.toc|length > 0 %}
+                    <div class="vp-doc-aside">
+                        <div class="vp-doc-aside-container">
+                            <div class="vp-doc-aside-outline">
+                                <div class="vp-doc-aside-outline-title">目录</div>
+                                <nav class="vp-doc-aside-outline-content">
+                                    <ul class="vp-outline-root">
                                         {% for toc_item in page.toc %}
-                                            <li><a href="{{ toc_item.url }}">{{ toc_item.title }}</a>
+                                            <li class="vp-outline-item">
+                                                <a href="{{ toc_item.url }}" class="vp-outline-link{% if loop.first %} active{% endif %}">
+                                                    {{ toc_item.title }}
+                                                </a>
                                                 {% if toc_item.children %}
-                                                <ul>
-                                                    {% for toc_item in toc_item.children %}
-                                                        <li><a href="{{ toc_item.url }}">{{ toc_item.title }}</a></li>
+                                                <ul class="vp-outline-children">
+                                                    {% for child in toc_item.children %}
+                                                        <li class="vp-outline-item">
+                                                            <a href="{{ child.url }}" class="vp-outline-link">
+                                                                {{ child.title }}
+                                                            </a>
+                                                        </li>
                                                     {% endfor %}
                                                 </ul>
                                                 {% endif %}
                                             </li>
                                         {% endfor %}
                                     </ul>
-                                </div>
-                                {% endif %}
-
-                                <!-- 页面内容 -->
-                                {% block content %}
-                                    {{ page.content }}
-                                {% endblock %}
-
-                                <!-- 上一页/下一页导航 -->
-                                {% if page.next_page or page.previous_page %}
-                                <div class="navigation">
-                                    {% if page.previous_page %}
-                                    <a href="{{ page.previous_page.url|url }}" class="navigation-prev" title="{{ page.previous_page.title }}">
-                                        上一页: {{ page.previous_page.title }}
-                                    </a>
-                                    {% endif %}
-
-                                    {% if page.next_page %}
-                                    <a href="{{ page.next_page.url|url }}" class="navigation-next" title="{{ page.next_page.title }}">
-                                        下一页: {{ page.next_page.title }}
-                                    </a>
-                                    {% endif %}
-                                </div>
-                                {% endif %}
-
-                            </section>
-
-                        <!-- 搜索结果 -->
-                        {% if 'search' in config['plugins'] %}
-                        <div id="book-search-results">
-                            <div class="search-noresults">
-
-                            </div>
-                            <div class="search-results">
-                                <div class="has-results">
-                                    <h1 class="search-results-title">
-                                        <span class='search-results-count'></span> 个结果匹配 "<span class='search-query'></span>"
-                                    </h1>
-                                    <ul class="search-results-list"></ul>
-                                </div>
-                                <div class="no-results">
-                                    <h1 class="search-results-title">没有找到匹配 "<span class='search-query'></span>" 的结果</h1>
-                                </div>
+                                </nav>
                             </div>
                         </div>
-                        {% endif %}
                     </div>
+                    {% endif %}
                 </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 搜索结果 -->
+    {% if 'search' in config['plugins'] %}
+    <div id="book-search-results">
+        <div class="search-noresults"></div>
+        <div class="search-results">
+            <div class="has-results">
+                <h1 class="search-results-title">
+                    <span class='search-results-count'></span> 个结果匹配 "<span class='search-query'></span>"
+                </h1>
+                <ul class="search-results-list"></ul>
+            </div>
+            <div class="no-results">
+                <h1 class="search-results-title">没有找到匹配 "<span class='search-query'></span>" 的结果</h1>
             </div>
         </div>
     </div>
+    {% endif %}
 
     <!-- 主题 JavaScript -->
     <script src="{{ "js/theme.js"|url }}"></script>
