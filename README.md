@@ -3,7 +3,7 @@
 blog.smallzh.top网站使用的主题，基于[MkDocs](https://mkdocs.readthedocs.io/) 构建。
 
 
-## 0x00.使用
+## 0x01.使用
 
 ### 安装主题
 
@@ -41,14 +41,12 @@ theme:
   dir: /path/to/mkdocs-smzhbook-theme/smzhbook_theme
 ```
 
-## 0x01.开发
+## 0x02.开发
 先安装 [uv](https://docs.astral.sh/uv/) ，再执行以下命令
 
 ```shell
 # 创建虚拟环境
-uv venv .venv
-# 安装 mkdocs
-uv pip install mkdocs
+uv sync
 # 启动
 uv run mkdocs serve
 ```

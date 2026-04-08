@@ -10,7 +10,7 @@ title: AboutMe
 
 - 从事软件开发多年，熟悉 Python、Web 开发
 - 热衷于开源项目和工具
-- 创建这个小工具主题是为了服务 [smallzh.top](https://smallzh.top) 网站
+- 创建这个小工具主题是为了服务 [blog.smallzh.top](https://blog.smallzh.top) 网站
 
 ## 0x02. 项目
 
