@@ -1,19 +1,24 @@
 # MkDocs Smzhbook Theme
 
-blog.smallzh.top网站使用的主题，基于[MkDocs](https://mkdocs.readthedocs.io/) 构建。
+The theme used on the blog.smallzh.top website, built with [MkDocs](https://mkdocs.readthedocs.io/).
 
+<div align="center">
 
-## 0x01.使用
+English | [Chinese](./README_zh.md)
 
-### 安装主题
+</div>
+
+## 0x01.Usage
+
+### Installing the Theme
 
 ```shell
 pip install mkdocs-smzhbook-theme
 ```
 
-### 配置 MkDocs
+### Configuring MkDocs
 
-在 `mkdocs.yml` 中设置主题：
+Setting the theme in `mkdocs.yml`:
 
 ```yaml
 site_name: Your Site Name
@@ -21,7 +26,7 @@ theme:
   name: smzhbook
 ```
 
-### 自定义样式和脚本
+### Customizing Styles and Scripts
 
 ```yaml
 extra_css:
@@ -31,9 +36,9 @@ extra_javascript:
   - custom.js
 ```
 
-### 本地开发主题
+### Local Theme Development
 
-如果需要在本地直接使用主题源码（而非安装的包），可以在 `mkdocs.yml` 中直接指定主题目录：
+If you need to use the theme source code directly locally (rather than the installed package), you can specify the theme directory directly in `mkdocs.yml`:
 
 ```yaml
 theme:
@@ -41,20 +46,20 @@ theme:
   dir: /path/to/mkdocs-smzhbook-theme/smzhbook_theme
 ```
 
-## 0x02.开发
-先安装 [uv](https://docs.astral.sh/uv/) ，再执行以下命令
+## 0x02.Development
+First install [uv](https://docs.astral.sh/uv/), then run the following commands
 
 ```shell
-# 创建虚拟环境
+# Create virtual environment
 uv sync
-# 启动
+# Start
 uv run mkdocs serve
 ```
 
-## 0xFF.感谢
+## 0xFF.Acknowledgments
 
-1. [MkDocs](https://mkdocs.readthedocs.io/) ，简单易用的静态站点生成器
-2. [mkdocs-basic-theme](https://mkdocs.github.io/mkdocs-basic-theme/) ， mkdocs的基础主题库
+1. [MkDocs](https://mkdocs.readthedocs.io/) - A simple and easy-to-use static site generator
+2. [mkdocs-basic-theme](https://mkdocs.github.io/mkdocs-basic-theme/) - MkDocs' base theme library
 
 [![PyPI Downloads][pypi-dl-image]][pypi-dl-link]
 [![PyPI Version][pypi-v-image]][pypi-v-link]
@@ -63,4 +68,3 @@ uv run mkdocs serve
 [pypi-dl-link]: https://pypi.python.org/pypi/mkdocs-smzhbook-theme
 [pypi-v-image]: https://img.shields.io/pypi/v/mkdocs-smzhbook-theme.png
 [pypi-v-link]: https://pypi.python.org/pypi/mkdocs-smzhbook-theme
-
