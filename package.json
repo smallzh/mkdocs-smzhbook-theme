@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@node-rs/jieba": "^2.0.1"
+  }
+}

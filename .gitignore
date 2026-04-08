@@ -6,3 +6,4 @@ site/
 uv.lock
 .idea
 .playwright-mcp
+node_modules

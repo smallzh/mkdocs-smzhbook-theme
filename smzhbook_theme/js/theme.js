@@ -10,6 +10,12 @@
     var sidebar = null;
     var menuToggle = null;
     var sidebarBackdrop = null;
+    var searchModal = null;
+    var searchButton = null;
+    var searchInput = null;
+    var searchModalBackdrop = null;
+    var searchCloseBtn = null;
+    var searchDebounceTimer = null;
 
     // ========== 初始化 ==========
     function init() {
@@ -28,6 +34,14 @@
         if (sidebar) {
             sidebarBackdrop = sidebar.querySelector('.vp-sidebar-backdrop');
         }
+        // 搜索相关元素
+        searchModal = document.getElementById('mkdocs-search-modal');
+        searchButton = document.querySelector('.vp-search-button');
+        searchInput = document.getElementById('mkdocs-search-query');
+        if (searchModal) {
+            searchModalBackdrop = searchModal.querySelector('.vp-search-modal-backdrop');
+            searchCloseBtn = searchModal.querySelector('.vp-search-modal-close');
+        }
     }
 
     // ========== 绑定事件 ==========
@@ -40,6 +54,26 @@
         // 点击背景关闭侧边栏
         if (sidebarBackdrop) {
             sidebarBackdrop.addEventListener('click', closeMenu);
+        }
+
+        // 搜索按钮点击
+        if (searchButton) {
+            searchButton.addEventListener('click', openSearchModal);
+        }
+
+        // 搜索弹窗背景点击关闭
+        if (searchModalBackdrop) {
+            searchModalBackdrop.addEventListener('click', closeSearchModal);
+        }
+
+        // 搜索关闭按钮
+        if (searchCloseBtn) {
+            searchCloseBtn.addEventListener('click', closeSearchModal);
+        }
+
+        // 搜索输入框 - 触发搜索
+        if (searchInput) {
+            searchInput.addEventListener("keyup", doSearch);
         }
 
         // 窗口大小改变时处理
@@ -97,81 +131,143 @@
     // ========== 键盘快捷键 ==========
     function initKeyboardShortcuts() {
         document.addEventListener('keydown', function(e) {
-            // Ctrl+K 或 Cmd+K 聚焦搜索框
+            // Ctrl+K 或 Cmd+K 打开搜索弹窗
             if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
                 e.preventDefault();
-                focusSearch();
+                openSearchModal();
             }
         });
     }
 
     function handleKeydown(e) {
-        // ESC 键关闭菜单
+        // ESC 键关闭菜单和搜索弹窗
         if (e.key === 'Escape') {
             if (isMenuOpen()) {
                 closeMenu();
             }
+            if (isSearchModalOpen()) {
+                closeSearchModal();
+            }
         }
+    }
+
+    // ========== 搜索弹窗控制 ==========
+    function openSearchModal() {
+        if (!searchModal) return;
+        
+        searchModal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        
+        // 延迟聚焦输入框，确保弹窗显示后再聚焦
+        setTimeout(function() {
+            if (searchInput) {
+                searchInput.focus();
+            }
+        }, 100);
+    }
+
+    function closeSearchModal() {
+        if (!searchModal) return;
+        
+        searchModal.classList.remove('open');
+        document.body.style.overflow = '';
+        
+        // 清空搜索框和结果
+        if (searchInput) {
+            searchInput.value = '';
+        }
+        clearSearchResults();
+    }
+
+    function isSearchModalOpen() {
+        return searchModal && searchModal.classList.contains('open');
     }
 
     // ========== 聚焦搜索框 ==========
     function focusSearch() {
-        var searchInput = document.querySelector('#book-search-input input');
         if (searchInput) {
             searchInput.focus();
             searchInput.select();
         }
     }
 
+    // ========== 清空搜索结果 ==========
+    function clearSearchResults() {
+        var resultsEmpty = document.querySelector('.vp-search-modal-results-empty');
+        var resultsList = document.querySelector('.vp-search-modal-results-list');
+        var resultsCount = document.querySelector('.vp-search-modal-results-count');
+        
+        if (resultsEmpty) {
+            resultsEmpty.style.display = 'block';
+            resultsEmpty.querySelector('p').textContent = '输入关键词开始搜索';
+        }
+        if (resultsList) {
+            resultsList.style.display = 'none';
+        }
+        if (resultsCount) {
+            resultsCount.textContent = '';
+        }
+    }
+
     // ========== 初始化搜索功能 ==========
     function initSearch() {
-        var searchInput = document.querySelector('#book-search-input input');
-        if (!searchInput) return;
-
-        // 防抖搜索
-        var debounceTimer;
-        searchInput.addEventListener('input', function(e) {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(function() {
-                performSearch(e.target.value);
-            }, 300);
+        // MkDocs search 插件会在 #mkdocs-search-results 中写入结果
+        // 我们需要监听这个变化并复制到弹窗中
+        var targetElement = document.getElementById('mkdocs-search-results');
+        if (!targetElement) return;
+        
+        // 使用 MutationObserver 监听搜索结果变化
+        var observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                    copySearchResultsToModal();
+                }
+            });
         });
+        
+        observer.observe(targetElement, { 
+            childList: true,
+            subtree: true 
+        });
+    }
 
-        // 回车搜索
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                clearTimeout(debounceTimer);
-                performSearch(e.target.value);
+    // ========== 复制搜索结果到弹窗 ==========
+    function copySearchResultsToModal() {
+        var mkdocsResults = document.getElementById('mkdocs-search-results');
+        if (!mkdocsResults) return;
+        
+        var resultsEmpty = document.querySelector('.vp-search-modal-results-empty');
+        var resultsList = document.querySelector('.vp-search-modal-results-list');
+        var resultsCount = document.querySelector('.vp-search-modal-results-count');
+        var searchQuery = document.getElementById('mkdocs-search-query');
+        
+        if (!resultsEmpty || !resultsList) return;
+        
+        var query = searchQuery ? searchQuery.value : '';
+        var hasResults = mkdocsResults.querySelector('.has-results');
+        var noResults = mkdocsResults.querySelector('.no-results');
+        var articles = mkdocsResults.querySelectorAll('article');
+        
+        if (articles && articles.length > 0) {
+            // 有结果
+            var html = '';
+            articles.forEach(function(article) {
+                html += '<li>' + article.innerHTML + '</li>';
+            });
+            
+            resultsEmpty.style.display = 'none';
+            resultsList.style.display = 'block';
+            
+            if (resultsCount) {
+                resultsCount.textContent = articles.length + ' 个结果';
             }
-        });
-    }
-
-    // ========== 执行搜索 ==========
-    function performSearch(query) {
-        if (!query || query.trim() === '') {
-            showSearchResults(false);
-            return;
-        }
-
-        // 如果有内置的搜索功能，使用它
-        if (typeof window.Search !== 'undefined') {
-            window.Search.query(query);
-            showSearchResults(true);
-        }
-    }
-
-    // ========== 显示/隐藏搜索结果 ==========
-    function showSearchResults(show) {
-        var searchResults = document.getElementById('book-search-results');
-
-        if (!searchResults) return;
-
-        if (show) {
-            searchResults.classList.add('open');
-            document.body.style.overflow = 'hidden';
-        } else {
-            searchResults.classList.remove('open');
-            document.body.style.overflow = '';
+            
+            resultsList.querySelector('.vp-search-results-list').innerHTML = html;
+        } else if (noResults || (query && query.length >= 3)) {
+            // 无结果
+            resultsEmpty.style.display = 'block';
+            resultsEmpty.querySelector('p').textContent = '没有找到匹配 "' + query + '" 的结果';
+            resultsList.style.display = 'none';
         }
     }
 
@@ -185,7 +281,20 @@
             var targetId = link.getAttribute('href');
             if (!targetId || targetId === '#') return;
 
-            var targetElement = document.querySelector(targetId);
+            // 处理以数字开头的 ID (CSS 选择器不支持以数字开头的 ID)
+            var selector = targetId.startsWith('#') ? targetId : '#' + targetId;
+            var targetElement;
+            try {
+                targetElement = document.querySelector(selector);
+            } catch (e) {
+                // 如果选择器无效，尝试转义
+                try {
+                    var escapedId = CSS.escape(targetId.substring(1));
+                    targetElement = document.getElementById(escapedId);
+                } catch (e2) {
+                    targetElement = null;
+                }
+            }
             if (targetElement) {
                 headings.push({
                     link: link,
@@ -347,7 +456,10 @@
         closeMenu: closeMenu,
         isMenuOpen: isMenuOpen,
         focusSearch: focusSearch,
-        smoothScrollTo: smoothScrollTo
+        smoothScrollTo: smoothScrollTo,
+        openSearchModal: openSearchModal,
+        closeSearchModal: closeSearchModal,
+        isSearchModalOpen: isSearchModalOpen
     };
 
 })();

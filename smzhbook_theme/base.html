@@ -38,11 +38,6 @@
     {% block extrahead %}
     {% endblock %}
 
-    <!-- 用户自定义 JavaScript -->
-    {% for script in config.extra_javascript %}
-    {{ script | script_tag }}
-    {% endfor %}
-
 </head>
 
 <body>
@@ -93,14 +88,19 @@
                     </nav>
                     {% endif %}
 
-                    <!-- 搜索框 -->
+                    <!-- 搜索按钮 -->
                     {% if 'search' in config['plugins'] %}
-                    <div class="vp-nav-bar-search">
-                        <div id="book-search-input">
-                            <input type="text" placeholder="搜索文档..." />
-                            <span class="vp-search-key">⌘ K</span>
-                        </div>
-                    </div>
+                    <button type="button" class="vp-search-button" aria-label="搜索" aria-keyshortcuts="Control+k">
+                        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" class="vp-search-icon">
+                            <circle cx="11" cy="11" r="8" stroke="currentColor" fill="none" stroke-width="2"></circle>
+                            <path d="m21 21-4.3-4.3" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                        <span class="vp-search-placeholder">搜索</span>
+                        <span class="vp-search-keys">
+                            <kbd class="vp-search-key">Ctrl</kbd>
+                            <kbd class="vp-search-key">K</kbd>
+                        </span>
+                    </button>
                     {% endif %}
                 </div>
             </div>
@@ -218,23 +218,52 @@
         </div>
     </div>
 
-    <!-- 搜索结果 -->
+    <!-- 搜索弹窗 -->
     {% if 'search' in config['plugins'] %}
-    <div id="book-search-results">
-        <div class="search-noresults"></div>
-        <div class="search-results">
-            <div class="has-results">
-                <h1 class="search-results-title">
-                    <span class='search-results-count'></span> 个结果匹配 "<span class='search-query'></span>"
-                </h1>
-                <ul class="search-results-list"></ul>
+    <script>
+        var base_url = '{{ base_url }}';
+    </script>
+    <div id="mkdocs-search-modal" class="vp-search-modal" role="dialog" aria-modal="true" aria-labelledby="search-modal-title">
+        <div class="vp-search-modal-backdrop"></div>
+        <div class="vp-search-modal-container">
+            <div class="vp-search-modal-header">
+                <div class="vp-search-modal-input-wrapper">
+                    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" class="vp-search-modal-icon">
+                        <circle cx="11" cy="11" r="8" stroke="currentColor" fill="none" stroke-width="2"></circle>
+                        <path d="m21 21-4.3-4.3" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                    <input type="search" id="mkdocs-search-query" class="vp-search-modal-input" placeholder="搜索文档..." autocomplete="off" spellcheck="false">
+                    <button type="button" class="vp-search-modal-close" aria-label="关闭搜索">
+                        <kbd>ESC</kbd>
+                    </button>
+                </div>
             </div>
-            <div class="no-results">
-                <h1 class="search-results-title">没有找到匹配 "<span class='search-query'></span>" 的结果</h1>
+            <div class="vp-search-modal-body">
+                <div class="vp-search-modal-results">
+                    <div class="vp-search-modal-results-empty">
+                        <p>输入关键词开始搜索</p>
+                    </div>
+                    <div class="vp-search-modal-results-list" style="display: none;">
+                        <div class="vp-search-modal-results-count"></div>
+                        <ul class="vp-search-results-list"></ul>
+                    </div>
+                    <div id="mkdocs-search-results">
+                        <p>请输入关键词进行搜索。</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     {% endif %}
+
+    <!-- jQuery (搜索插件依赖 - 必须在 search/main.js 之前加载) -->
+    <script src="{{ "js/jquery.min.js"|url }}"></script>
+
+    <!-- 用户自定义 JavaScript -->
+    {% for script in config.extra_javascript %}
+    {{ script | script_tag }}
+    {% endfor %}
+
 
     <!-- 主题 JavaScript -->
     <script src="{{ "js/theme.js"|url }}"></script>
