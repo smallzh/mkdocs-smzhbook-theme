@@ -588,13 +588,73 @@ body {
     background-color: var(--vp-c-bg-soft);
 }
 
-.vp-sidebar-item.active > .vp-sidebar-link {
+.vp-sidebar-item.active > .vp-sidebar-link,
+.vp-sidebar-item.active > .vp-sidebar-link-wrap > .vp-sidebar-link {
     color: var(--vp-c-brand-1);
     background-color: var(--vp-c-brand-soft);
     font-weight: 600;
 }
 
-/* 子菜单 */
+/* ===== 可折叠导航项 ===== */
+.vp-sidebar-item-collapsible > .vp-sidebar-link-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
+    margin: 2px 0;
+}
+
+.vp-sidebar-item-collapsible > .vp-sidebar-link-wrap > .vp-sidebar-link {
+    flex: 1;
+    padding: 8px var(--vp-space-md);
+    border-radius: var(--vp-radius-md);
+    margin: 0;
+}
+
+.vp-sidebar-item-collapsible > .vp-sidebar-link-wrap > .vp-sidebar-link:hover {
+    background-color: var(--vp-c-bg-soft);
+}
+
+/* 折叠/展开按钮 */
+.vp-sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: var(--vp-radius-sm);
+    flex-shrink: 0;
+    margin-right: 4px;
+    transition: background-color 0.25s, color 0.25s;
+    color: var(--vp-c-text-3);
+}
+
+.vp-sidebar-toggle:hover {
+    color: var(--vp-c-text-1);
+    background-color: var(--vp-c-bg-soft);
+}
+
+/* 折叠/展开箭头图标 */
+.vp-sidebar-toggle-icon {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.25s ease;
+    margin-top: -3px;
+}
+
+.vp-sidebar-item-collapsible.open > .vp-sidebar-link-wrap > .vp-sidebar-toggle > .vp-sidebar-toggle-icon {
+    transform: rotate(45deg);
+    margin-top: 0;
+}
+
+/* 子菜单容器 */
 .vp-sidebar-children {
     list-style: none;
     margin: 0;
@@ -602,6 +662,17 @@ body {
     padding-left: var(--vp-space-md);
 }
 
+/* 展开状态 - 显示子菜单 */
+.vp-sidebar-item-collapsible.open > .vp-sidebar-children {
+    display: block;
+}
+
+/* 折叠状态 - 隐藏子菜单 */
+.vp-sidebar-item-collapsible:not(.open) > .vp-sidebar-children {
+    display: none;
+}
+
+/* 子菜单链接样式 */
 .vp-sidebar-children .vp-sidebar-link {
     font-size: 13px;
     font-weight: 400;
@@ -610,6 +681,79 @@ body {
 
 .vp-sidebar-children .vp-sidebar-link:hover {
     color: var(--vp-c-text-1);
+}
+
+/* ===== 导航层级样式 ===== */
+
+/* 第1级 - 最高层分组标题 */
+.vp-sidebar-level-1 > .vp-sidebar-link-wrap > .vp-sidebar-link,
+.vp-sidebar-level-1 > .vp-sidebar-link {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--vp-c-text-1);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.vp-sidebar-level-1 > .vp-sidebar-link-wrap > .vp-sidebar-link:hover {
+    color: var(--vp-c-brand-1);
+}
+
+/* 第2级 - 子分组 */
+.vp-sidebar-level-2 > .vp-sidebar-link-wrap > .vp-sidebar-link,
+.vp-sidebar-level-2 > .vp-sidebar-link {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--vp-c-text-1);
+}
+
+/* 第3级及更深 - 叶子节点 */
+.vp-sidebar-level-3 > .vp-sidebar-link-wrap > .vp-sidebar-link,
+.vp-sidebar-level-3 > .vp-sidebar-link {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--vp-c-text-2);
+}
+
+.vp-sidebar-level-3 > .vp-sidebar-link:hover,
+.vp-sidebar-level-3 > .vp-sidebar-link-wrap > .vp-sidebar-link:hover {
+    color: var(--vp-c-text-1);
+}
+
+/* 第3级及更深的缩进 */
+.vp-sidebar-level-3 {
+    position: relative;
+}
+
+.vp-sidebar-level-3 > .vp-sidebar-link::before,
+.vp-sidebar-level-3 > .vp-sidebar-link-wrap > .vp-sidebar-link::before {
+    content: '';
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: var(--vp-c-text-3);
+    transform: translateY(-50%);
+    transition: background-color 0.25s;
+}
+
+.vp-sidebar-level-3 > .vp-sidebar-link:hover::before,
+.vp-sidebar-level-3 > .vp-sidebar-link-wrap > .vp-sidebar-link:hover::before,
+.vp-sidebar-level-3.active > .vp-sidebar-link::before,
+.vp-sidebar-level-3.active > .vp-sidebar-link-wrap > .vp-sidebar-link::before {
+    background-color: var(--vp-c-brand-1);
+}
+
+.vp-sidebar-level-3 > .vp-sidebar-link,
+.vp-sidebar-level-3 > .vp-sidebar-link-wrap > .vp-sidebar-link {
+    padding-left: 28px;
+}
+
+/* 可折叠项中的子链接 span 样式 */
+.vp-sidebar-link-section {
+    cursor: pointer;
 }
 
 /* ========== 主内容区域 ========== */

@@ -115,30 +115,9 @@
                     <nav class="vp-sidebar-nav" role="navigation">
                         <div class="vp-sidebar-group">
                             <ul class="vp-sidebar-links">
-                                <!-- 导航项 -->
                                 {% for nav_item in nav %}
-                                    {% if nav_item.children %}
-                                        <!-- 有子菜单的项 - 渲染分组标题和子项 -->
-                                        <li class="vp-sidebar-section">
-                                            <p class="vp-sidebar-section-title">{{ nav_item.title }}</p>
-                                            <ul class="vp-sidebar-section-items">
-                                                {% for child in nav_item.children %}
-                                                    <li class="vp-sidebar-item{% if child.active %} active{% endif %}">
-                                                        <a href="{{ child.url|url }}" class="vp-sidebar-link">
-                                                            {{ child.title }}
-                                                        </a>
-                                                    </li>
-                                                {% endfor %}
-                                            </ul>
-                                        </li>
-                                    {% else %}
-                                        <!-- 单页项 -->
-                                        <li class="vp-sidebar-item{% if nav_item.active %} active{% endif %}">
-                                            <a href="{{ nav_item.url|url }}" class="vp-sidebar-link">
-                                                {{ nav_item.title }}
-                                            </a>
-                                        </li>
-                                    {% endif %}
+                                    {% set level = 1 %}
+                                    {% include "nav.html" %}
                                 {% endfor %}
                             </ul>
                         </div>

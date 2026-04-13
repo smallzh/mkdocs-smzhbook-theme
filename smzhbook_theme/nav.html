@@ -1,18 +1,29 @@
-<!-- VitePress 风格导航项模板 -->
+<!-- 递归导航项模板 - 支持多级导航 -->
 {% if nav_item.children %}
-    <!-- 有子菜单的项 -->
-    <li class="vp-sidebar-item{% if nav_item.active %} active{% endif %}">
-        <a href="{{ nav_item.url|url }}" class="vp-sidebar-link">{{ nav_item.title }}</a>
+    <!-- 有子菜单的项 - 可折叠分组 -->
+    {% set is_active = nav_item.active %}
+    <li class="vp-sidebar-item vp-sidebar-item-collapsible{% if level <= 3 %} open{% endif %}{% if is_active %} active{% endif %}{% if level == 1 %} vp-sidebar-level-1{% elif level == 2 %} vp-sidebar-level-2{% elif level >= 3 %} vp-sidebar-level-3{% endif %}">
+        <div class="vp-sidebar-link-wrap">
+            {% if nav_item.url %}
+            <a href="{{ nav_item.url|url }}" class="vp-sidebar-link vp-sidebar-link-section">{{ nav_item.title }}</a>
+            {% else %}
+            <span class="vp-sidebar-link vp-sidebar-link-section">{{ nav_item.title }}</span>
+            {% endif %}
+            <button class="vp-sidebar-toggle" aria-label="展开/收起">
+                <span class="vp-sidebar-toggle-icon"></span>
+            </button>
+        </div>
         <ul class="vp-sidebar-children">
             {% for child in nav_item.children %}
                 {% set nav_item = child %}
+                {% set level = level + 1 %}
                 {% include "nav.html" %}
             {% endfor %}
         </ul>
     </li>
 {% else %}
     <!-- 单页项 -->
-    <li class="vp-sidebar-item{% if nav_item.active %} active{% endif %}">
+    <li class="vp-sidebar-item{% if nav_item.active %} active{% endif %}{% if level == 1 %} vp-sidebar-level-1{% elif level == 2 %} vp-sidebar-level-2{% elif level >= 3 %} vp-sidebar-level-3{% endif %}">
         <a href="{{ nav_item.url|url }}" class="vp-sidebar-link">
             {{ nav_item.title }}
         </a>

@@ -21,6 +21,8 @@
     function init() {
         initElements();
         bindEvents();
+        initSidebarToggle();
+        initActiveSidebarHighlight();
         initSearch();
         initTocHighlight();
         initSmoothScroll();
@@ -126,6 +128,47 @@
     // ========== 检查菜单是否打开 ==========
     function isMenuOpen() {
         return sidebar && sidebar.classList.contains('open');
+    }
+
+    // ========== 侧边栏折叠/展开切换 ==========
+    function initSidebarToggle() {
+        var toggleButtons = document.querySelectorAll('.vp-sidebar-toggle');
+        toggleButtons.forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var listItem = btn.closest('.vp-sidebar-item-collapsible');
+                if (listItem) {
+                    listItem.classList.toggle('open');
+                }
+            });
+        });
+    }
+
+    // ========== 高亮当前激活的侧边栏项 ==========
+    function initActiveSidebarHighlight() {
+        // 默认展开1-3级导航项
+        var collapsibleItems = document.querySelectorAll('.vp-sidebar-item-collapsible');
+        collapsibleItems.forEach(function(item) {
+            if (item.classList.contains('vp-sidebar-level-1') ||
+                item.classList.contains('vp-sidebar-level-2') ||
+                item.classList.contains('vp-sidebar-level-3')) {
+                item.classList.add('open');
+            }
+        });
+
+        // 确保激活项的所有父级也展开
+        var activeItems = document.querySelectorAll('.vp-sidebar-item.active');
+        activeItems.forEach(function(activeItem) {
+            var parent = activeItem.parentElement;
+            while (parent) {
+                if (parent.classList && parent.classList.contains('vp-sidebar-item-collapsible')) {
+                    parent.classList.add('open');
+                }
+                parent = parent.parentElement;
+                if (parent && parent.id === 'vp-sidebar') break;
+            }
+        });
     }
 
     // ========== 键盘快捷键 ==========

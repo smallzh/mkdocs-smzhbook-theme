@@ -11,6 +11,9 @@ nav:
       - '自定义插件': user-guide/custom-plugins.md
       - 'Search插件解析过程': user-guide/search-plugin-parse-process.md
       - '发布到PyPI': user-guide/publishing-to-pypi.md
+      - 进阶:
+          - '进阶配置': user-guide/advanced/advanced-config.md
+          - '性能优化': user-guide/advanced/performance.md
   - About:
       - '关于': about/about_me.md
       - 'License': about/license.md
