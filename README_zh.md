@@ -2,6 +2,8 @@
 
 blog.smallzh.top网站使用的主题，基于[MkDocs](https://mkdocs.readthedocs.io/) 构建。
 
+**在线文档：<https://mkdocs-smzhbook-theme.readthedocs.io/>**
+
 <div align="center">
 
 中文 | [English](./README.md)
@@ -61,9 +63,12 @@ uv run mkdocs serve
 1. [MkDocs](https://mkdocs.readthedocs.io/) ，简单易用的静态站点生成器
 2. [mkdocs-basic-theme](https://mkdocs.github.io/mkdocs-basic-theme/) ， mkdocs的基础主题库
 
+[![Read the Docs][rtd-image]][rtd-link]
 [![PyPI Downloads][pypi-dl-image]][pypi-dl-link]
 [![PyPI Version][pypi-v-image]][pypi-v-link]
 
+[rtd-image]: https://img.shields.io/readthedocs/mkdocs-smzhbook-theme
+[rtd-link]: https://mkdocs-smzhbook-theme.readthedocs.io/
 [pypi-dl-image]: https://img.shields.io/pypi/dm/mkdocs-smzhbook-theme.png
 [pypi-dl-link]: https://pypi.python.org/pypi/mkdocs-smzhbook-theme
 [pypi-v-image]: https://img.shields.io/pypi/v/mkdocs-smzhbook-theme.png

@@ -2,6 +2,8 @@
 
 The theme used on the blog.smallzh.top website, built with [MkDocs](https://mkdocs.readthedocs.io/).
 
+**Documentation: <https://mkdocs-smzhbook-theme.readthedocs.io/>**
+
 <div align="center">
 
 English | [Chinese](./README_zh.md)
@@ -61,9 +63,12 @@ uv run mkdocs serve
 1. [MkDocs](https://mkdocs.readthedocs.io/) - A simple and easy-to-use static site generator
 2. [mkdocs-basic-theme](https://mkdocs.github.io/mkdocs-basic-theme/) - MkDocs' base theme library
 
+[![Read the Docs][rtd-image]][rtd-link]
 [![PyPI Downloads][pypi-dl-image]][pypi-dl-link]
 [![PyPI Version][pypi-v-image]][pypi-v-link]
 
+[rtd-image]: https://img.shields.io/readthedocs/mkdocs-smzhbook-theme
+[rtd-link]: https://mkdocs-smzhbook-theme.readthedocs.io/
 [pypi-dl-image]: https://img.shields.io/pypi/dm/mkdocs-smzhbook-theme.png
 [pypi-dl-link]: https://pypi.python.org/pypi/mkdocs-smzhbook-theme
 [pypi-v-image]: https://img.shields.io/pypi/v/mkdocs-smzhbook-theme.png
