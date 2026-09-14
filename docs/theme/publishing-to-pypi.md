@@ -1,3 +1,7 @@
+---
+title: 发布到 PyPI
+---
+
 # 发布 MkDocs 主题到 PyPI
 
 本指南将详细介绍如何将 MkDocs 主题发布到 PyPI，让其他用户可以通过 `pip install` 安装你的主题。

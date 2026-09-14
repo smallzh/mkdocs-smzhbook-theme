@@ -2,20 +2,22 @@ site_name: mkdocs smzhbook theme
 repo_url: https://github.com/smallzh/mkdocs-smzhbook-theme
 
 nav:
-  - Home: index.md
-  - User Guide:
-      - 'mkdocs.yml文件参数': user-guide/configuration.md
-      - 'markdown文档': user-guide/writing-your-docs.md
-      - 'MkDocs解析过程': user-guide/mkdocs-parse-process.md
-      - '自定义主题': user-guide/custom-themes.md
-      - '自定义插件': user-guide/custom-plugins.md
-      - 'Search插件解析过程': user-guide/search-plugin-parse-process.md
-      - '发布到PyPI': user-guide/publishing-to-pypi.md
-      - 进阶:
-          - '进阶配置': user-guide/advanced/advanced-config.md
-          - '性能优化': user-guide/advanced/performance.md
-  - About:
-      - '关于': about/about_me.md
+  - 首页: index.md
+  - MkDocs 程序说明:
+      - '导读': mkdocs/index.md
+      - 'mkdocs.yml 配置': mkdocs/configuration.md
+      - 'Markdown 文档写作': mkdocs/writing-your-docs.md
+      - '构建流程全解析': mkdocs/build-process.md
+      - '搜索插件原理': mkdocs/search.md
+      - '自定义插件': mkdocs/custom-plugins.md
+      - '自定义主题': mkdocs/custom-themes.md
+  - 主题文档:
+      - '主题总览与安装': theme/index.md
+      - '定制与进阶配置': theme/advanced-config.md
+      - '构建与性能优化': theme/performance.md
+      - '发布到 PyPI': theme/publishing-to-pypi.md
+  - 关于:
+      - '关于我': about/about_me.md
       - 'License': about/license.md
 
 theme:
@@ -29,3 +31,7 @@ plugins:
       min_search_length: 2
       prebuild_index: false
       indexing: full
+
+markdown_extensions:
+  - toc:
+      slugify: !!python/name:markdown.extensions.toc.slugify_unicode

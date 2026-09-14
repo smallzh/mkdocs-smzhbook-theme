@@ -1,5 +1,5 @@
 ---
-title: Writing Markdown
+title: Markdown 文档写作
 ---
 
 # 写 Markdown 文档
@@ -19,11 +19,25 @@ MkDocs 基于 Python-Markdown，支持标准的 Markdown 语法以及丰富的�
 ###### 六级标题
 ```
 
-MkDocs 使用 `toc` 扩展自动为标题生成锚点 ID。锚点 ID 规则：
-- 标题文本转小写
-- 空格替换为连字符
-- 移除非法字符
-- 合并连续连字符
+MkDocs 使用 `toc` 扩展自动为标题生成锚点 ID。默认规则是：
+
+- 英文字母转小写，空格替换为连字符；
+- 连续连字符合并，首尾连字符去掉；
+- 同名标题追加 `_1`、`_2` 后缀以区分。
+
+**中文标题要注意**：`toc` 扩展默认的 `slugify` 会把非 ASCII 字符整段丢弃，于是 `## 配置文件怎么被找到` 会退化成 `#_1`、`#_2` 这种序号，既难读，又会因为章节增删而漂移，导致外部链接静默失效。
+
+解决办法是在 `mkdocs.yml` 里换成保留 Unicode 的 slugify：
+
+```yaml
+markdown_extensions:
+  - toc:
+      slugify: !!python/name:markdown.extensions.toc.slugify_unicode
+```
+
+它来自 Python-Markdown 自带模块，不需要额外安装包。改用之后，`## 0x01. 配置文件怎么被找到` 的锚点就是 `#0x01-配置文件怎么被找到`，跨页引用写成 `[配置](configuration.md#0x01-配置文件怎么被找到)`。
+
+> 本站就启用了这个配置（见仓库根的 `mkdocs.yml`）。
 
 ### 列表
 
@@ -63,7 +77,8 @@ MkDocs 使用 `toc` 扩展自动为标题生成锚点 ID。锚点 ID 规则：
 
 **锚点链接**：
 ```markdown
-[跳转到标题](#标题文本)
+[跳转到本页某一节](#0x01-可用的元素)
+[跳转到其他页的一节](configuration.md#0x04-主题)
 ```
 
 ### 图片与媒体

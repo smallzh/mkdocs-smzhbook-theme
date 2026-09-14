@@ -1,5 +1,5 @@
 ---
-title: Custom Plugins
+title: 自定义插件
 ---
 
 # 自定义 MkDocs 插件
@@ -1279,7 +1279,7 @@ twine upload --repository testpypi dist/*
 twine upload dist/*
 ```
 
-详细的发布流程请参考 [发布 MkDocs 主题到 PyPI](publishing-to-pypi.md) 文档。
+详细的发布流程请参考 [发布 MkDocs 主题到 PyPI](../theme/publishing-to-pypi.md) 文档。
 
 ### 命名规范
 
