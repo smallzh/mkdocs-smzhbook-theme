@@ -1,6 +1,7 @@
 /**
  * VitePress 风格主题 JavaScript
- * 提供交互功能：菜单切换、搜索、目录高亮、平滑滚动等
+ * 提供交互功能：菜单切换、搜索、目录高亮、平滑滚动、亮/暗主题切换、
+ * Mermaid 图表点击放大等
  */
 
 (function() {
@@ -27,6 +28,8 @@
         initTocHighlight();
         initSmoothScroll();
         initKeyboardShortcuts();
+        initThemeToggle();
+        initMermaidZoom();
     }
 
     // ========== 初始化 DOM 元素引用 ==========
@@ -427,7 +430,10 @@
 
     // ========== 平滑滚动到元素 ==========
     function smoothScrollTo(element, duration) {
-        var navHeight = 64; // 导航栏高度
+        // 导航栏高度取自 CSS 变量，避免与 --vp-nav-height 不同步
+        var navHeight = parseInt(
+            getComputedStyle(document.documentElement).getPropertyValue('--vp-nav-height'), 10
+        ) || 60;
         var targetPosition = element.offsetTop - navHeight - 20;
         var startPosition = window.scrollY;
         var distance = targetPosition - startPosition;
@@ -485,6 +491,297 @@
         };
     }
 
+    // ========== 亮 / 暗主题切换 ==========
+    // 首屏主题由 base.html <head> 内的内联脚本提前应用（避免白闪），
+    // 这里只负责：同步按钮状态、响应点击、持久化选择、重绘 mermaid 图。
+    var THEME_STORAGE_KEY = 'smzh-theme';
+    var themeToggle = null;
+
+    function getSavedTheme() {
+        try {
+            var saved = localStorage.getItem(THEME_STORAGE_KEY);
+            if (saved === 'light' || saved === 'dark') return saved;
+        } catch (e) { /* localStorage 不可用（隐私模式等）时忽略 */ }
+        return null;
+    }
+
+    function getSystemTheme() {
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return 'dark';
+        }
+        return 'light';
+    }
+
+    function getCurrentTheme() {
+        return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+    }
+
+    // 重绘 mermaid 图（弹窗开着时先把 SVG 移回原容器）
+    function rerenderMermaid() {
+        if (typeof window.smzhRenderMermaid !== 'function') return;
+        if (isMermaidZoomOpen()) closeMermaidZoom();
+        window.smzhRenderMermaid();
+    }
+
+    // 应用主题；save 为 true 时写入 localStorage 并重绘 mermaid 图
+    // （mermaid 的 default / dark 是两套配色，只能重新渲染，不能靠 CSS 覆盖）
+    function applyTheme(theme, save) {
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+
+        if (themeToggle) {
+            var label = theme === 'dark' ? '切换到亮色模式' : '切换到暗色模式';
+            themeToggle.title = label;
+            themeToggle.setAttribute('aria-label', label);
+        }
+
+        if (save) {
+            try { localStorage.setItem(THEME_STORAGE_KEY, theme); } catch (e) {}
+            rerenderMermaid();
+        }
+    }
+
+    function setTheme(theme) {
+        applyTheme(theme === 'dark' ? 'dark' : 'light', true);
+    }
+
+    function toggleTheme() {
+        setTheme(getCurrentTheme() === 'dark' ? 'light' : 'dark');
+    }
+
+    function initThemeToggle() {
+        themeToggle = document.querySelector('.vp-theme-toggle');
+
+        if (themeToggle) {
+            themeToggle.addEventListener('click', toggleTheme);
+        }
+
+        // 首屏主题已由 base.html <head> 内联脚本应用，这里只同步按钮文案
+        applyTheme(getCurrentTheme(), false);
+
+        // 用户未手动选择过主题时，跟随系统亮/暗变化
+        if (window.matchMedia) {
+            var mq = window.matchMedia('(prefers-color-scheme: dark)');
+            var onSystemChange = function() {
+                if (getSavedTheme()) return;   // 已手动选择，不再跟随系统
+                applyTheme(getSystemTheme(), false);
+                rerenderMermaid();
+            };
+            if (mq.addEventListener) {
+                mq.addEventListener('change', onSystemChange);
+            } else if (mq.addListener) {
+                mq.addListener(onSystemChange);   // 旧版 Safari
+            }
+        }
+    }
+
+    // ========== Mermaid 图表点击放大 ==========
+    // 点击图表弹出全屏弹窗：滚轮缩放（1~4 倍，指针位置锚定）、拖拽平移，
+    // Esc / 点击遮罩 / 关闭按钮关闭。用 document 级事件委托，
+    // 与 mermaid 的异步渲染解耦（点击发生时 SVG 必然已存在）。
+    var MZ_MIN_SCALE = 1;
+    var MZ_MAX_SCALE = 4;
+    var MZ_ZOOM_STEP = 1.15;
+    var MZ_DBL_SCALE = 2.5;
+
+    var mzModal = null;
+    var mzBackdrop = null;
+    var mzCloseBtn = null;
+    var mzStage = null;
+    var mzStageInner = null;
+    var mzSvg = null;          // 弹窗中的 svg
+    var mzHost = null;         // svg 的原宿主 .mermaid
+    var mzSavedFocus = null;
+    var mzScale = 1;
+    var mzBaseWidth = 0;       // scale=1 时 svg 在弹窗内的宽度（缩放基准）
+    var mzDragging = false;
+    var mzStartX = 0;
+    var mzStartY = 0;
+    var mzScrollLeft = 0;
+    var mzScrollTop = 0;
+
+    function buildMermaidZoomModal() {
+        if (mzModal) return;
+
+        mzModal = document.createElement('div');
+        mzModal.className = 'mz-modal';
+        mzModal.setAttribute('role', 'dialog');
+        mzModal.setAttribute('aria-modal', 'true');
+        mzModal.setAttribute('aria-label', '图表放大查看');
+
+        mzBackdrop = document.createElement('div');
+        mzBackdrop.className = 'mz-modal-backdrop';
+
+        var panel = document.createElement('div');
+        panel.className = 'mz-modal-panel';
+
+        mzCloseBtn = document.createElement('button');
+        mzCloseBtn.className = 'mz-modal-close';
+        mzCloseBtn.type = 'button';
+        mzCloseBtn.setAttribute('aria-label', '关闭');
+        mzCloseBtn.textContent = '✕';
+
+        mzStage = document.createElement('div');
+        mzStage.className = 'mz-stage';
+        mzStage.tabIndex = -1;
+
+        mzStageInner = document.createElement('div');
+        mzStageInner.className = 'mz-stage-inner';
+        mzStage.appendChild(mzStageInner);
+
+        panel.appendChild(mzCloseBtn);
+        panel.appendChild(mzStage);
+        mzModal.appendChild(mzBackdrop);
+        mzModal.appendChild(panel);
+        document.body.appendChild(mzModal);
+
+        mzBackdrop.addEventListener('click', function(e) {
+            if (e.target === mzBackdrop) closeMermaidZoom();
+        });
+        mzCloseBtn.addEventListener('click', closeMermaidZoom);
+        mzStage.addEventListener('wheel', onMermaidZoomWheel, { passive: false });
+        mzStage.addEventListener('pointerdown', onMermaidZoomPointerDown);
+        mzStage.addEventListener('pointermove', onMermaidZoomPointerMove);
+        mzStage.addEventListener('pointerup', onMermaidZoomPointerUp);
+        mzStage.addEventListener('pointercancel', onMermaidZoomPointerUp);
+        mzStage.addEventListener('dblclick', onMermaidZoomDblClick);
+    }
+
+    function isMermaidZoomOpen() {
+        return mzSvg !== null;
+    }
+
+    function openMermaidZoom(svg) {
+        if (mzSvg) return;   // 已打开
+        mzHost = svg.closest('.mermaid');
+        buildMermaidZoomModal();
+
+        mzSavedFocus = document.activeElement;
+        mzSvg = svg;
+        mzScale = 1;
+        mzStage.scrollLeft = 0;
+        mzStage.scrollTop = 0;
+        mzStage.classList.remove('mz-scaled');
+        mzStageInner.appendChild(svg);   // 移动而非克隆：保持 SVG 内部 id 唯一
+        mzBaseWidth = svg.getBoundingClientRect().width;   // 弹窗内自适应后的基准宽度
+
+        if (mzHost) mzHost.classList.add('mz-hidden');
+        mzModal.classList.add('mz-open');
+        document.documentElement.classList.add('mz-lock');   // 锁背景滚动
+        mzStage.focus();
+    }
+
+    function closeMermaidZoom() {
+        if (!mzSvg) return;
+
+        mzStage.classList.remove('mz-scaled');
+        mzSvg.style.width = '';   // 还原内联宽度
+
+        if (mzHost) {
+            mzHost.appendChild(mzSvg);   // 移回原位
+            mzHost.classList.remove('mz-hidden');
+        }
+
+        mzSvg = null;
+        mzHost = null;
+        mzModal.classList.remove('mz-open');
+        document.documentElement.classList.remove('mz-lock');
+
+        if (mzSavedFocus && mzSavedFocus.focus) mzSavedFocus.focus();   // 恢复焦点
+        mzSavedFocus = null;
+    }
+
+    // 应用缩放：显式设置 svg 宽度，>1 时放开 max-width 限制让滚动条扩展
+    function setMermaidZoomScale(next) {
+        if (next === mzScale) return;
+
+        if (next > 1) {
+            mzStage.classList.add('mz-scaled');
+            mzSvg.style.width = Math.round(mzBaseWidth * next) + 'px';
+        } else {
+            mzStage.classList.remove('mz-scaled');
+            mzSvg.style.width = '';
+        }
+        mzScale = next;
+    }
+
+    // 滚轮缩放：指针位置锚定，缩放前后光标下的内容点保持不动
+    function onMermaidZoomWheel(e) {
+        if (!mzSvg) return;
+        e.preventDefault();
+
+        var factor = e.deltaY < 0 ? MZ_ZOOM_STEP : 1 / MZ_ZOOM_STEP;
+        var next = Math.min(MZ_MAX_SCALE, Math.max(MZ_MIN_SCALE, mzScale * factor));
+        if (next === mzScale) return;
+
+        var rect = mzStage.getBoundingClientRect();
+        var mx = e.clientX - rect.left;
+        var my = e.clientY - rect.top;
+        setMermaidZoomScale(next);
+        mzStage.scrollLeft = ((mx + mzStage.scrollLeft) * next / mzScale) - mx;
+        mzStage.scrollTop = ((my + mzStage.scrollTop) * next / mzScale) - my;
+    }
+
+    // 拖拽平移（仅放大后启用）：直接改 scrollLeft/Top，与滚动条同源
+    function onMermaidZoomPointerDown(e) {
+        if (!mzSvg || mzScale <= 1) return;
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+        mzDragging = true;
+        mzStartX = e.clientX;
+        mzStartY = e.clientY;
+        mzScrollLeft = mzStage.scrollLeft;
+        mzScrollTop = mzStage.scrollTop;
+        mzStage.classList.add('mz-dragging');
+        if (mzStage.setPointerCapture) mzStage.setPointerCapture(e.pointerId);
+        e.preventDefault();
+    }
+
+    function onMermaidZoomPointerMove(e) {
+        if (!mzDragging) return;
+        mzStage.scrollLeft = mzScrollLeft - (e.clientX - mzStartX);
+        mzStage.scrollTop = mzScrollTop - (e.clientY - mzStartY);
+    }
+
+    function onMermaidZoomPointerUp(e) {
+        if (!mzDragging) return;
+        mzDragging = false;
+        mzStage.classList.remove('mz-dragging');
+        if (mzStage.releasePointerCapture) mzStage.releasePointerCapture(e.pointerId);
+    }
+
+    // 触摸设备：双击在 1x 与 2.5x 间切换（滚轮的替代交互）
+    function onMermaidZoomDblClick(e) {
+        if (!mzSvg) return;
+        e.preventDefault();
+
+        var next = mzScale > 1 ? MZ_MIN_SCALE : MZ_DBL_SCALE;
+        var rect = mzStage.getBoundingClientRect();
+        var cx = rect.width / 2;
+        var cy = rect.height / 2;
+        setMermaidZoomScale(next);
+        mzStage.scrollLeft = ((cx + mzStage.scrollLeft) * next / mzScale) - cx;
+        mzStage.scrollTop = ((cy + mzStage.scrollTop) * next / mzScale) - cy;
+    }
+
+    function initMermaidZoom() {
+        // 全局委托：点击图表打开（mermaid 异步渲染后依然有效）
+        document.addEventListener('click', function(e) {
+            if (mzSvg) return;                     // 弹窗已打开
+            var target = e.target;
+            if (!target.closest) return;
+            if (target.closest('.mz-modal')) return;   // 弹窗内部
+            var svg = target.closest('.mermaid svg');
+            if (!svg) return;
+            if (svg.closest('a')) return;          // 图内链接交给浏览器
+            e.preventDefault();
+            openMermaidZoom(svg);
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && isMermaidZoomOpen()) closeMermaidZoom();
+        });
+    }
+
     // ========== 页面加载完成后初始化 ==========
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
@@ -502,7 +799,15 @@
         smoothScrollTo: smoothScrollTo,
         openSearchModal: openSearchModal,
         closeSearchModal: closeSearchModal,
-        isSearchModalOpen: isSearchModalOpen
+        isSearchModalOpen: isSearchModalOpen,
+        // 亮/暗主题
+        getTheme: getCurrentTheme,
+        setTheme: setTheme,
+        toggleTheme: toggleTheme,
+        // Mermaid 放大
+        openMermaidZoom: openMermaidZoom,
+        closeMermaidZoom: closeMermaidZoom,
+        isMermaidZoomOpen: isMermaidZoomOpen
     };
 
 })();

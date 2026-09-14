@@ -34,7 +34,7 @@
     
     /* 404错误页面样式 */
     .vp-404-container {
-        min-height: calc(100vh - 64px);
+        min-height: calc(100vh - var(--vp-nav-height));
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -125,7 +125,7 @@
         }
         
         .vp-404-container {
-            min-height: calc(100vh - 56px);
+            min-height: calc(100vh - var(--vp-nav-height));
             padding: 48px 20px;
         }
     }

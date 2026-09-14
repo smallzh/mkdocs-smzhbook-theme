@@ -24,6 +24,22 @@
     <!-- 生成器信息 -->
     <meta name="generator" content="mkdocs-{{ mkdocs_version }}, mkdocs-smzhbook-{{ config.theme.version }}">
 
+    <!-- 主题（亮/暗）预置：同步执行于首屏渲染前，避免暗色用户看到白闪 -->
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('smzh-theme');
+                if (saved !== 'light' && saved !== 'dark') {
+                    saved = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+                        ? 'dark' : 'light';
+                }
+                if (saved === 'dark') {
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) { /* localStorage 不可用（隐私模式等）时忽略 */ }
+        })();
+    </script>
+
     <!-- Favicon -->
     <link rel="shortcut icon" href="{{ "img/favicon.ico"|url }}" type="image/x-icon">
 
@@ -102,6 +118,24 @@
                         </span>
                     </button>
                     {% endif %}
+
+                    <!-- 亮/暗主题切换按钮（点击逻辑见 js/theme.js 的 initThemeToggle） -->
+                    <button type="button" class="vp-theme-toggle" title="切换主题" aria-label="切换主题">
+                        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="5"/>
+                            <line x1="12" y1="1" x2="12" y2="3"/>
+                            <line x1="12" y1="21" x2="12" y2="23"/>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                            <line x1="1" y1="12" x2="3" y2="12"/>
+                            <line x1="21" y1="12" x2="23" y2="12"/>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
         </header>
@@ -250,10 +284,10 @@
     <!-- Mermaid.js (本地) -->
     <script src="{{ "js/mermaid.min.js"|url }}"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            mermaid.initialize({
+        (function () {
+            // 除主题外的公共配置
+            var BASE_CONFIG = {
                 startOnLoad: false,
-                theme: 'default',
                 securityLevel: 'loose',
                 flowchart: {
                     useMaxWidth: true,
@@ -263,25 +297,64 @@
                     useMaxWidth: true,
                     diagramMarginX: 50
                 }
+            };
+
+            function isDark() {
+                return document.documentElement.classList.contains('dark');
+            }
+
+            // 把 ```mermaid 代码块替换为 div.mermaid，并把图源留在 data-mermaid-src 上：
+            // 亮/暗切换时需要据此重绘（渲染后 SVG 会覆盖源码，无法再取回原文）
+            function collectBlocks() {
+                document.querySelectorAll('.language-mermaid, .mermaid').forEach(function (block) {
+                    var parent = block.parentElement;
+                    if (parent && parent.tagName === 'PRE') {
+                        var code = block.textContent || block.innerText;
+                        var div = document.createElement('div');
+                        div.className = 'mermaid';
+                        div.setAttribute('data-mermaid-src', code);
+                        div.textContent = code;
+                        parent.parentNode.replaceChild(div, parent);
+                    }
+                });
+
+                // 兼容正文里手写的 <div class="mermaid">
+                document.querySelectorAll('div.mermaid').forEach(function (el) {
+                    if (el.getAttribute('data-mermaid-src') === null) {
+                        el.setAttribute('data-mermaid-src', el.textContent || '');
+                    }
+                });
+            }
+
+            // 按当前主题渲染全部图表：初始化时调用一次，切换亮/暗时再调用
+            // （mermaid 的 default / dark 主题色不同，必须重绘而非改 CSS）
+            window.smzhRenderMermaid = function () {
+                if (typeof mermaid === 'undefined') return;
+
+                var config = Object.assign({ theme: isDark() ? 'dark' : 'default' }, BASE_CONFIG);
+                mermaid.initialize(config);
+
+                document.querySelectorAll('.mermaid').forEach(function (el) {
+                    var src = el.getAttribute('data-mermaid-src');
+                    if (src === null) return;
+                    el.removeAttribute('data-processed');
+                    el.innerHTML = '';
+                    el.textContent = src;
+                });
+
+                try {
+                    var result = mermaid.run();
+                    if (result && result.catch) result.catch(function () { /* 图内语法错误交给 mermaid 自身提示 */ });
+                } catch (e) { /* 忽略：让浏览器控制台保留 mermaid 的原始报错 */ }
+            };
+
+            document.addEventListener('DOMContentLoaded', function () {
+                collectBlocks();
+                window.smzhRenderMermaid();
             });
-            
-            // 渲染页面中的 Mermaid 代码块
-            var mermaidBlocks = document.querySelectorAll('.language-mermaid, .mermaid');
-            mermaidBlocks.forEach(function(block) {
-                var parent = block.parentElement;
-                if (parent && parent.tagName === 'PRE') {
-                    var code = block.textContent || block.innerText;
-                    var div = document.createElement('div');
-                    div.className = 'mermaid';
-                    div.textContent = code;
-                    parent.parentNode.replaceChild(div, parent);
-                }
-            });
-            
-            // 重新渲染所有 mermaid div
-            mermaid.run();
-        });
+        })();
     </script>
+
 
     <!-- MkDocs 版本和构建时间 -->
     <!--
