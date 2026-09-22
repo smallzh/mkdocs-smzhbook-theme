@@ -1,3 +1,18 @@
+{#- 右侧目录递归渲染宏：items 为 TOC 节点列表，max_level 为最大显示层级（h1=1、h2=2、h3=3），top 标记是否为最外层 -#}
+{%- macro render_outline(items, max_level, top) -%}
+<ul class="{% if top %}vp-outline-root{% else %}vp-outline-children{% endif %}">
+    {%- for toc_item in items %}
+    {%- if toc_item.level <= max_level %}
+    <li class="vp-outline-item">
+        <a href="{{ toc_item.url }}" class="vp-outline-link{% if top and loop.first %} active{% endif %}">{{ toc_item.title }}</a>
+        {%- if toc_item.children and toc_item.level < max_level %}
+        {{ render_outline(toc_item.children, max_level, false) }}
+        {%- endif %}
+    </li>
+    {%- endif %}
+    {%- endfor %}
+</ul>
+{%- endmacro -%}
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -201,26 +216,8 @@
                             <div class="vp-doc-aside-outline">
                                 <div class="vp-doc-aside-outline-title">目录</div>
                                 <nav class="vp-doc-aside-outline-content">
-                                    <ul class="vp-outline-root">
-                                        {% for toc_item in page.toc %}
-                                            <li class="vp-outline-item">
-                                                <a href="{{ toc_item.url }}" class="vp-outline-link{% if loop.first %} active{% endif %}">
-                                                    {{ toc_item.title }}
-                                                </a>
-                                                {% if toc_item.children %}
-                                                <ul class="vp-outline-children">
-                                                    {% for child in toc_item.children %}
-                                                        <li class="vp-outline-item">
-                                                            <a href="{{ child.url }}" class="vp-outline-link">
-                                                                {{ child.title }}
-                                                            </a>
-                                                        </li>
-                                                    {% endfor %}
-                                                </ul>
-                                                {% endif %}
-                                            </li>
-                                        {% endfor %}
-                                    </ul>
+                                    {#- 目录显示到 h3：修改最后的数字即可（3 = h3，2 = 只到 h2） -#}
+                                    {{ render_outline(page.toc, 3, true) }}
                                 </nav>
                             </div>
                         </div>

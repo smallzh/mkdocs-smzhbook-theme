@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mkdocs-smzhbook-theme"
-version = "1.5"
+version = "1.5.1"
 description = "smallzh's book theme for MkDocs"
 requires-python = ">=3.10"
 readme = "README.md"

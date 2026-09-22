@@ -1002,6 +1002,11 @@ body {
     font-size: 12px;
 }
 
+/* 三级标题（h3）：缩进收紧一档，避免在 200px 侧栏内换行过多 */
+.vp-outline-children .vp-outline-children {
+    padding-left: var(--vp-space-sm);
+}
+
 /* ========== 搜索结果 (MkDocs 生成的结果容器，隐藏用于复制到弹窗) ========== */
 #mkdocs-search-results {
     display: none;
